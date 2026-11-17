@@ -1,0 +1,6 @@
+{
+  "name": "laermcheck",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node test/szenarien.mjs" }
+}

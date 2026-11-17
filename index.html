@@ -2,43 +2,108 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lärmcheck – Machbarkeitstest</title>
-<style>
-  :root { --bg:#f7f7f5; --fg:#1d1d1f; --muted:#666; --card:#fff; --line:#ddd; --accent:#2563eb; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#eee; --muted:#aaa; --card:#1f1f1f; --line:#333; --accent:#6ea0ff; } }
-  body { margin:0; padding:24px 16px; background:var(--bg); color:var(--fg); font:16px/1.5 -apple-system, "Helvetica Neue", Arial, sans-serif; }
-  main { max-width:520px; margin:0 auto; }
-  h1 { font-size:1.4rem; margin:0 0 4px; }
-  .sub { color:var(--muted); margin:0 0 20px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
-  .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); }
-  .row:last-of-type { border-bottom:0; }
-  a { color:var(--accent); }
-  .note { color:var(--muted); font-size:.85rem; margin-top:12px; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lärmcheck – Besteht dein Auto den Lärmtest?</title>
+<meta name="description" content="Lärm-Risiko-Check für Trackdays: Limit mit Quelle und Risiko-Ampel für Standtest und Drive-by.">
+<meta name="theme-color" content="#121416" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#efece4" media="(prefers-color-scheme: light)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
 </head>
 <body>
+<div class="kerb" aria-hidden="true"></div>
+
+<header class="top">
+  <p class="eyebrow">Trackday · UK · Vorabversion</p>
+  <h1>Lärm<span>check</span></h1>
+  <p class="lead">Vor der Buchung wissen, wie riskant der Lärmtest wird – mit Limit, Quelle und Ampel für <strong>Standtest</strong> und <strong>Drive-by</strong>.</p>
+  <p class="disclaimer">Einschätzung, keine Garantie. Werte stammen von den Veranstaltern und werden noch geprüft.</p>
+</header>
+
 <main>
-  <h1>Lärmcheck</h1>
-  <p class="sub">Machbarkeitstest: Diese Seite lädt eine Strecke aus <code>data/strecken.json</code>.</p>
-  <div class="card" id="out">Lade Daten …</div>
-  <p class="note">Einschätzung, keine Garantie. Werte immer auf der Buchungsseite prüfen.</p>
+  <!-- 01 TERMIN -->
+  <section class="step" id="step-termin" data-state="active" aria-labelledby="h-termin">
+    <div class="step-head">
+      <span class="step-no" aria-hidden="true">01</span>
+      <h2 id="h-termin">Dein Termin</h2>
+      <span class="step-check" aria-hidden="true"></span>
+    </div>
+
+    <div class="fields">
+      <label class="field">
+        <span class="field-label">Strecke</span>
+        <select id="sel-strecke"><option value="">Strecke wählen …</option></select>
+      </label>
+      <label class="field" id="f-veranstalter" hidden>
+        <span class="field-label">Veranstalter</span>
+        <select id="sel-veranstalter"></select>
+      </label>
+      <label class="field" id="f-tagesart" hidden>
+        <span class="field-label">Tagesart</span>
+        <select id="sel-tagesart"></select>
+        <span class="field-help">Welche Tagesart dein Termin hat, steht auf der Buchungsseite.</span>
+      </label>
+    </div>
+
+    <div class="limits" id="limits" hidden aria-live="polite"></div>
+  </section>
+
+  <!-- 02 AUTO -->
+  <section class="step" id="step-auto" data-state="waiting" aria-labelledby="h-auto">
+    <div class="step-head">
+      <span class="step-no" aria-hidden="true">02</span>
+      <h2 id="h-auto">Dein Auto</h2>
+      <span class="step-check" aria-hidden="true"></span>
+    </div>
+
+    <fieldset class="group">
+      <legend class="field-label">Auspuff</legend>
+      <div class="chips" id="kategorien"></div>
+    </fieldset>
+
+    <fieldset class="group">
+      <legend class="field-label">Ansaugung</legend>
+      <div class="segmented" role="radiogroup">
+        <label><input type="radio" name="ansaugung" value="serie" checked><span>Serie</span></label>
+        <label><input type="radio" name="ansaugung" value="offen"><span>Offen / Sportfilter</span></label>
+      </div>
+    </fieldset>
+
+    <label class="field">
+      <span class="field-label">Dein Standwert <em>optional</em></span>
+      <span class="input-unit">
+        <input id="in-wert" type="text" inputmode="decimal" autocomplete="off" placeholder="z. B. 99" aria-describedby="wert-help wert-err">
+        <span>dB</span>
+      </span>
+      <span class="field-help" id="wert-help">Gemessen 0,5 m hinter dem Auspuff bei ¾ der Maximaldrehzahl, z. B. bei einem früheren Trackday. Nur mit Messwert ist Grün möglich.</span>
+      <span class="field-error" id="wert-err" role="alert"></span>
+    </label>
+  </section>
+
+  <!-- 03 ERGEBNIS -->
+  <section class="step" id="step-ergebnis" data-state="waiting" aria-labelledby="h-ergebnis">
+    <div class="step-head">
+      <span class="step-no" aria-hidden="true">03</span>
+      <h2 id="h-ergebnis">Einschätzung</h2>
+    </div>
+    <div id="ergebnis" aria-live="polite">
+      <p class="empty">Wähle oben deinen Termin und deinen Auspuff – dann erscheint hier die Ampel für Standtest und Drive-by.</p>
+    </div>
+  </section>
 </main>
-<script>
-fetch("data/strecken.json")
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-  .then(list => {
-    const s = list[0];
-    document.getElementById("out").innerHTML =
-      `<div class="row"><span>Strecke</span><strong>${s.strecke}</strong></div>
-       <div class="row"><span>Veranstalter</span><span>${s.veranstalter}</span></div>
-       <div class="row"><span>Tagesart</span><span>${s.tagesart}</span></div>
-       <div class="row"><span>Standtest</span><strong>${s.stand_db} dB(A)</strong></div>
-       <div class="row"><span>Drive-by</span><strong>${String(s.driveby_db).replace(".", ",")} dB(A)</strong></div>
-       <p class="note">Quelle: <a href="${s.quelle}" target="_blank" rel="noopener">${new URL(s.quelle).hostname}</a> · geprüft am ${s.geprueft_am.split("-").reverse().join(".")}</p>`;
-  })
-  .catch(e => { document.getElementById("out").textContent = "Daten konnten nicht geladen werden (" + e.message + ")."; });
-</script>
+
+<a class="peek" id="peek" href="#step-ergebnis" hidden>
+  <span class="peek-lamps" id="peek-lamps"></span>
+  <span>Einschätzung ansehen</span>
+  <span aria-hidden="true">↓</span>
+</a>
+
+<footer class="foot">
+  <p><strong>So funktioniert die Ampel:</strong> feste Regeln, keine KI. Ohne eigenen Messwert gibt es nie Grün. Rot heißt hohes Risiko – nicht sicher durchgefallen.</p>
+  <p>Daten: öffentliche Angaben der Veranstalter, jeweils mit Quelle. Hochschulprojekt an der Hochschule der Medien Stuttgart. Keine Cookies, kein Tracking.</p>
+</footer>
 </body>
 </html>
