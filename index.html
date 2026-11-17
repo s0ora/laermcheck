@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lärmcheck – Machbarkeitstest</title>
+<style>
+  :root { --bg:#f7f7f5; --fg:#1d1d1f; --muted:#666; --card:#fff; --line:#ddd; --accent:#2563eb; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#eee; --muted:#aaa; --card:#1f1f1f; --line:#333; --accent:#6ea0ff; } }
+  body { margin:0; padding:24px 16px; background:var(--bg); color:var(--fg); font:16px/1.5 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width:520px; margin:0 auto; }
+  h1 { font-size:1.4rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); }
+  .row:last-of-type { border-bottom:0; }
+  a { color:var(--accent); }
+  .note { color:var(--muted); font-size:.85rem; margin-top:12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lärmcheck</h1>
+  <p class="sub">Machbarkeitstest: Diese Seite lädt eine Strecke aus <code>data/strecken.json</code>.</p>
+  <div class="card" id="out">Lade Daten …</div>
+  <p class="note">Einschätzung, keine Garantie. Werte immer auf der Buchungsseite prüfen.</p>
+</main>
+<script>
+fetch("data/strecken.json")
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(list => {
+    const s = list[0];
+    document.getElementById("out").innerHTML =
+      `<div class="row"><span>Strecke</span><strong>${s.strecke}</strong></div>
+       <div class="row"><span>Veranstalter</span><span>${s.veranstalter}</span></div>
+       <div class="row"><span>Tagesart</span><span>${s.tagesart}</span></div>
+       <div class="row"><span>Standtest</span><strong>${s.stand_db} dB(A)</strong></div>
+       <div class="row"><span>Drive-by</span><strong>${String(s.driveby_db).replace(".", ",")} dB(A)</strong></div>
+       <p class="note">Quelle: <a href="${s.quelle}" target="_blank" rel="noopener">${new URL(s.quelle).hostname}</a> · geprüft am ${s.geprueft_am.split("-").reverse().join(".")}</p>`;
+  })
+  .catch(e => { document.getElementById("out").textContent = "Daten konnten nicht geladen werden (" + e.message + ")."; });
+</script>
+</body>
+</html>

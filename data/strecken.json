@@ -1,0 +1,12 @@
+[
+  {
+    "id": "bedford-evo-standard",
+    "strecke": "Bedford Autodrome",
+    "veranstalter": "evo Trackdays",
+    "tagesart": "Standard",
+    "stand_db": 101,
+    "driveby_db": 87.5,
+    "quelle": "https://trackdays.evo.co.uk/drive26/driverinfo",
+    "geprueft_am": "2026-11-17"
+  }
+]
