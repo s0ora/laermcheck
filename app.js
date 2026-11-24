@@ -61,6 +61,13 @@ function readout(label, limit, art) {
     <span class="tag ${streng ? "" : "normal"}">${streng ? "strenges Limit" : "normales Limit"}</span></div>`;
 }
 
+function messart(e) {
+  const teile = [];
+  if (e.stand_db != null) teile.push(`Standtest ${esc(e.messart_stand || "nicht angegeben")}`);
+  if (e.driveby_db != null) teile.push(`Drive-by ${esc(e.messart_driveby || "nicht angegeben")}`);
+  return `Messart: ${teile.join(" · ")}`;
+}
+
 function zeigeLimits() {
   const e = eintrag();
   const box = $("limits");
@@ -72,20 +79,22 @@ function zeigeLimits() {
     return;
   }
   box.innerHTML = `<div class="readouts">${readout("Standtest", e.stand_db, "stand")}${readout("Drive-by", e.driveby_db, "driveby")}</div>
+    <p class="source">${messart(e)}</p>
     <p class="source">Quelle: <a href="${esc(e.quelle)}" target="_blank" rel="noopener">${esc(e.quelle_label)}</a> · gelesen am ${datum(e.gelesen_am)}</p>
     ${e.status === "alt" ? `<p class="warn">⚠ ${esc(e.status_text)}</p>` : ""}`;
 }
 
 /* ---------- Anzeige: Ergebnis ---------- */
-const LAMPEN = [["rot", "r"], ["gelb", "y"], ["gruen", "g"]];
-const lampen = (stufe) => `<div class="lamps" aria-hidden="true">${LAMPEN.map(([s, c]) => `<span class="lamp ${c}${s === stufe ? " on" : ""}"></span>`).join("")}</div>`;
+// Ampel als Plakat: zwei Farbkreise im Überdruck, darunter die Legende mit „warum“
+const discNum = (r) => (r.stufe === "unbekannt" ? "?" : r.limit != null ? dbFmt(r.limit) : "–");
+const disc = (r) => `<div class="disc" data-stufe="${r.stufe}"><span class="disc-num">${discNum(r)}</span></div>`;
 
-function sticker(titel, r) {
+function legende(titel, r) {
   const limit = r.limit != null ? `Limit ${dbFmt(r.limit)} dB(A)` : "";
-  return `<article class="sticker" data-stufe="${r.stufe}">
-    <div class="sticker-head"><span class="sticker-art">${titel}</span><span class="sticker-limit">${limit}</span></div>
-    ${lampen(r.stufe)}
-    <p class="sticker-stufe">${STUFEN[r.stufe].label}</p>
+  return `<article data-stufe="${r.stufe}">
+    <h3>${titel}</h3>
+    <b class="stufe">${STUFEN[r.stufe].label}</b>
+    ${limit ? `<span class="limit">${limit}</span>` : ""}
     <p>${esc(r.warum)}</p>
     ${r.zusatz ? `<p class="zusatz">${esc(r.zusatz)}</p>` : ""}
   </article>`;
@@ -127,7 +136,10 @@ function zeigeErgebnis() {
   ziel.innerHTML = `
     <p class="summary"><span><strong>${esc(termin)}</strong></span><button class="linkbtn" data-goto="step-termin">ändern</button></p>
     <p class="summary"><span><strong>${esc(auto)}</strong></span><button class="linkbtn" data-goto="step-auto">ändern</button></p>
-    <div class="stickers">${sticker("Standtest", r.stand)}${sticker("Drive-by", r.driveby)}</div>
+    <div class="poster">
+      <div class="discs" aria-hidden="true">${disc(r.stand)}${disc(r.driveby)}</div>
+      <div class="legend">${legende("Standtest", r.stand)}${legende("Drive-by", r.driveby)}</div>
+    </div>
     <div class="panel"><h3>Was du tun kannst</h3><ul>${tipps.map((t) => `<li>${esc(t)}</li>`).join("")}
       ${e ? `<li>Limit vor der Buchung prüfen: <a href="${esc(e.quelle)}" target="_blank" rel="noopener">${esc(e.quelle_label)}</a></li>` : ""}</ul></div>
     ${alts.length ? `<div class="panel"><h3>Termine mit geringerem Risiko</h3><ul class="alts">${alts.map(({ eintrag: a, ergebnis: ar }) => `

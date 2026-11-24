@@ -55,5 +55,10 @@ pruefe("Messwert 99,5 ok", pruefeMesswert("99,5"), null);
 pruefe("Messwert 12 abgelehnt", pruefeMesswert("12") !== null, true);
 pruefe("Messwert abc abgelehnt", pruefeMesswert("abc") !== null, true);
 
+// Kriterium 1: jede Zeile hat Quelle, Lesedatum und ein Messart-Feld; alle 5 Strecken vorhanden
+pruefe("Kriterium 1: 5 Strecken in der Tabelle", new Set(daten.map((x) => x.strecke)).size, 5);
+pruefe("Kriterium 1: Zeilen ohne Quelle/Datum/Messart-Feld",
+  daten.filter((x) => !x.quelle || !x.quelle_label || !x.gelesen_am || !("messart_stand" in x) || !("messart_driveby" in x)).map((x) => x.id), []);
+
 console.log(fehler ? `\n${fehler} Prüfung(en) fehlgeschlagen` : "\nAlle Prüfungen bestanden");
 process.exit(fehler ? 1 : 0);
