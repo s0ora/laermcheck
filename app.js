@@ -1,4 +1,4 @@
-import { KATEGORIEN, STUFEN, kategorie, istStreng, pruefeMesswert, bewerte, alternativen } from "./rules.js?v=5";
+import { KATEGORIEN, STUFEN, kategorie, istStreng, pruefeMesswert, bewerte, alternativen } from "./rules.js?v=6";
 
 const FEHLT = "__fehlt";
 const $ = (id) => document.getElementById(id);
@@ -228,9 +228,30 @@ function verbinde() {
     .observe($("step-ergebnis"));
 }
 
+/* ---------- Hell / Dunkel ---------- */
+const dunkelSystem = matchMedia("(prefers-color-scheme: dark)");
+const themaJetzt = () => document.documentElement.dataset.theme || (dunkelSystem.matches ? "dark" : "light");
+function zeigeThema() {
+  const t = themaJetzt();
+  $("theme").textContent = t === "dark" ? "Hell" : "Dunkel";
+  $("theme").setAttribute("aria-label", t === "dark" ? "Helles Design" : "Dunkles Design");
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => { m.content = t === "dark" ? "#151412" : "#f2ece0"; });
+}
+function verbindeThema() {
+  $("theme").addEventListener("click", () => {
+    const neu = themaJetzt() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = neu;
+    try { localStorage.setItem("theme", neu); } catch {}
+    zeigeThema();
+  });
+  dunkelSystem.addEventListener("change", zeigeThema);
+  zeigeThema();
+}
+
 async function start() {
+  verbindeThema();
   try {
-    const res = await fetch("data/strecken.json?v=5");
+    const res = await fetch("data/strecken.json?v=6");
     if (!res.ok) throw new Error(res.status);
     daten = await res.json();
   } catch (err) {

@@ -20,8 +20,23 @@
   color-scheme: light;
 }
 
+:root[data-theme="dark"] {           /* „Nachtrennen“: gleiches Plakat, dunkles Papier */
+  --paper: #151412;
+  --paper-2: #1e1c19;
+  --ink: #f2ece0;
+  --muted: #b3aa9a;
+  --rule: #f2ece0;
+  --hair: #3a3630;
+  --brand: #d0566a;
+  --on-brand: #151412;
+  --yellow: #f2b705;
+  --red: #e0293f;
+  --green: #2f9e62;
+  --grey: #6f685d;
+  color-scheme: dark;
+}
 @media (prefers-color-scheme: dark) {
-  :root {                      /* „Nachtrennen“: gleiches Plakat, dunkles Papier */
+  :root:not([data-theme="light"]) {
     --paper: #151412;
     --paper-2: #1e1c19;
     --ink: #f2ece0;
@@ -65,7 +80,7 @@ body {
 /* ---------- Kopf ---------- */
 .top { padding-top: 22px; padding-bottom: 4px; }
 .eyebrow {
-  display: flex; justify-content: space-between; gap: 12px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
   margin: 0 0 18px;
   font: 600 11px/1 var(--display); font-variation-settings: "wdth" 125;
   letter-spacing: .16em; text-transform: uppercase;
@@ -85,6 +100,12 @@ h1 .l2 { display: block; color: var(--brand); margin-left: .22em; animation: sli
   font-size: 18px; font-weight: 500; max-width: 36ch;
 }
 .lead strong { font-weight: 800; }
+.eyebrow-r { display: flex; align-items: center; gap: 10px; }
+.theme-btn {
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink);
+  background: none; border: 1.5px solid var(--ink); padding: 5px 8px; cursor: pointer;
+}
+.theme-btn:hover { background: var(--ink); color: var(--paper); }
 .disclaimer { margin: 0; color: var(--muted); font-size: 14px; }
 
 /* ---------- Schritte ---------- */
@@ -111,11 +132,10 @@ h2 {
   text-transform: uppercase; letter-spacing: -.01em;
 }
 .step-check { width: 22px; height: 22px; border: 2px solid var(--ink); flex: none; align-self: center; }
-.step[data-state="done"] .step-check {
-  background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7' fill='none' stroke='%23f2ece0' stroke-width='3.2' stroke-linecap='square'/%3E%3C/svg%3E") center/16px no-repeat;
-}
-@media (prefers-color-scheme: dark) {
-  .step[data-state="done"] .step-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7' fill='none' stroke='%23151412' stroke-width='3.2' stroke-linecap='square'/%3E%3C/svg%3E"); }
+.step[data-state="done"] .step-check { background: var(--ink); position: relative; }
+.step[data-state="done"] .step-check::after {
+  content: ""; position: absolute; left: 5px; top: 1px; width: 6px; height: 11px;
+  border: solid var(--paper); border-width: 0 3px 3px 0; transform: rotate(45deg);
 }
 
 /* ---------- Felder ---------- */
