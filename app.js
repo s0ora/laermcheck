@@ -1,4 +1,4 @@
-import { KATEGORIEN, STUFEN, kategorie, istStreng, pruefeMesswert, bewerte, alternativen } from "./rules.js";
+import { KATEGORIEN, STUFEN, kategorie, istStreng, pruefeMesswert, bewerte, alternativen } from "./rules.js?v=5";
 
 const FEHLT = "__fehlt";
 const $ = (id) => document.getElementById(id);
@@ -36,12 +36,12 @@ function baueTermin() {
 
   const vs = uniq(daten.filter((d) => d.strecke === state.strecke).map((d) => d.veranstalter));
   $("f-veranstalter").hidden = !state.strecke;
-  fuelle($("sel-veranstalter"), "Veranstalter wählen …", vs, "Mein Veranstalter fehlt");
+  fuelle($("sel-veranstalter"), "Veranstalter wählen …", vs, "Anderer Veranstalter");
   $("sel-veranstalter").value = state.veranstalter;
 
   const ts = daten.filter((d) => d.strecke === state.strecke && d.veranstalter === state.veranstalter).map((d) => d.tagesart);
   $("f-tagesart").hidden = !state.veranstalter || state.veranstalter === FEHLT;
-  fuelle($("sel-tagesart"), "Tagesart wählen …", ts, "Meine Tagesart fehlt");
+  fuelle($("sel-tagesart"), "Tagesart wählen …", ts, "Andere Tagesart");
   $("sel-tagesart").value = state.tagesart;
 }
 
@@ -58,14 +58,14 @@ function readout(label, limit, art) {
   const streng = istStreng(art, limit);
   return `<div class="readout"><span class="readout-label">${label}</span>
     <span class="readout-value">${dbFmt(limit)}<small>dB(A)</small></span>
-    <span class="tag ${streng ? "" : "normal"}">${streng ? "strenges Limit" : "normales Limit"}</span></div>`;
+    <span class="tag ${streng ? "" : "normal"}">${streng ? "streng" : "normal"}</span></div>`;
 }
 
 function messart(e) {
   const teile = [];
-  if (e.stand_db != null) teile.push(`Standtest ${esc(e.messart_stand || "nicht angegeben")}`);
-  if (e.driveby_db != null) teile.push(`Drive-by ${esc(e.messart_driveby || "nicht angegeben")}`);
-  return `Messart: ${teile.join(" · ")}`;
+  if (e.stand_db != null) teile.push(`Stand ${esc(e.messart_stand || "k. A.")}`);
+  if (e.driveby_db != null) teile.push(`Drive-by ${esc(e.messart_driveby || "k. A.")}`);
+  return `Messung: ${teile.join(" · ")}`;
 }
 
 function zeigeLimits() {
@@ -74,13 +74,12 @@ function zeigeLimits() {
   if (e === undefined) { box.hidden = true; box.innerHTML = ""; return; }
   box.hidden = false;
   if (e === null) {
-    box.innerHTML = `<div class="unknown-box"><strong>Für diesen Termin haben wir noch keine Daten.</strong><br>
-      Frag beim Veranstalter nach dem Limit für Standtest und Drive-by. Wir schätzen keine Werte.</div>`;
+    box.innerHTML = `<div class="unknown-box">Keine Daten für diesen Termin. Wir schätzen nichts.</div>`;
     return;
   }
   box.innerHTML = `<div class="readouts">${readout("Standtest", e.stand_db, "stand")}${readout("Drive-by", e.driveby_db, "driveby")}</div>
     <p class="source">${messart(e)}</p>
-    <p class="source">Quelle: <a href="${esc(e.quelle)}" target="_blank" rel="noopener">${esc(e.quelle_label)}</a> · gelesen am ${datum(e.gelesen_am)}</p>
+    <p class="source">Quelle: <a href="${esc(e.quelle)}" target="_blank" rel="noopener">${esc(e.quelle_label)}</a> · gelesen ${datum(e.gelesen_am)}</p>
     ${e.status === "alt" ? `<p class="warn">⚠ ${esc(e.status_text)}</p>` : ""}`;
 }
 
@@ -90,11 +89,9 @@ const discNum = (r) => (r.stufe === "unbekannt" ? "?" : r.limit != null ? dbFmt(
 const disc = (r) => `<div class="disc" data-stufe="${r.stufe}"><span class="disc-num">${discNum(r)}</span></div>`;
 
 function legende(titel, r) {
-  const limit = r.limit != null ? `Limit ${dbFmt(r.limit)} dB(A)` : "";
   return `<article data-stufe="${r.stufe}">
     <h3>${titel}</h3>
     <b class="stufe">${STUFEN[r.stufe].label}</b>
-    ${limit ? `<span class="limit">${limit}</span>` : ""}
     <p>${esc(r.warum)}</p>
     ${r.zusatz ? `<p class="zusatz">${esc(r.zusatz)}</p>` : ""}
   </article>`;
@@ -106,9 +103,9 @@ function zeigeErgebnis() {
   const bereit = e !== undefined && state.kategorie && !wertFehler();
   if (!bereit) {
     ziel.innerHTML = `<p class="empty">${
-      e === undefined ? "Wähle oben deinen Termin und deinen Auspuff – dann erscheint hier die Ampel für Standtest und Drive-by."
-      : !state.kategorie ? "Fast geschafft: Wähle unter „Dein Auto“ noch deinen Auspuff."
-      : "Bitte korrigiere deinen Standwert oder lass das Feld leer."}</p>`;
+      e === undefined ? "Termin und Auspuff wählen."
+      : !state.kategorie ? "Noch Auspuff wählen."
+      : "Standwert korrigieren oder leer lassen."}</p>`;
     zeigePeek(null);
     return;
   }
@@ -117,18 +114,16 @@ function zeigeErgebnis() {
   const kat = kategorie(state.kategorie);
   const termin = e
     ? `${e.strecke} · ${e.veranstalter} · ${e.tagesart}`
-    : `${state.strecke} · ${state.veranstalter === FEHLT ? "Veranstalter nicht in der Liste" : `${state.veranstalter} · Tagesart nicht in der Liste`}`;
-  const auto = `${kat.name} · Ansaugung ${state.ansaugung === "offen" ? "offen" : "Serie"} · ${standwert() != null ? `Standwert ${dbFmt(standwert())} dB` : "ohne Messwert"}`;
+    : `${state.strecke} · ${state.veranstalter === FEHLT ? "anderer Veranstalter" : `${state.veranstalter} · andere Tagesart`}`;
+  const auto = `${kat.name}${state.ansaugung === "offen" ? " · Ansaugung offen" : ""} · ${standwert() != null ? `${dbFmt(standwert())} dB` : "ohne Messwert"}`;
 
   const tipps = uniq([...r.stand.tipps, ...r.driveby.tipps]);
   if (e) {
     tipps.push(...(e.hinweise || []));
-    if (e.folge) tipps.push(`Laut Veranstalter: ${e.folge}`);
-  } else {
-    tipps.push("Frag beim Veranstalter nach dem Limit für Standtest und Drive-by an deinem Tag.");
+    if (e.folge) tipps.push(e.folge);
   }
   if (standwert() == null && e && e.stand_db != null && !["motorsport", "straight"].includes(state.kategorie)) {
-    tipps.push("Mit einem eigenen Standwert wird die Einschätzung genauer – nur dann ist Grün möglich.");
+    tipps.push("Eigener Standwert = genauer, nur dann Grün.");
   }
 
   const alts = e ? alternativen(daten, e, eingabe()) : [];
@@ -140,13 +135,11 @@ function zeigeErgebnis() {
       <div class="discs" aria-hidden="true">${disc(r.stand)}${disc(r.driveby)}</div>
       <div class="legend">${legende("Standtest", r.stand)}${legende("Drive-by", r.driveby)}</div>
     </div>
-    <div class="panel"><h3>Was du tun kannst</h3><ul>${tipps.map((t) => `<li>${esc(t)}</li>`).join("")}
-      ${e ? `<li>Limit vor der Buchung prüfen: <a href="${esc(e.quelle)}" target="_blank" rel="noopener">${esc(e.quelle_label)}</a></li>` : ""}</ul></div>
-    ${alts.length ? `<div class="panel"><h3>Termine mit geringerem Risiko</h3><ul class="alts">${alts.map(({ eintrag: a, ergebnis: ar }) => `
-      <li><button class="alt" data-alt="${esc(a.id)}"><span>${esc(a.strecke)} · ${esc(a.veranstalter)}<small>${esc(a.tagesart)} · Stand ${a.stand_db ?? "–"} / Drive-by ${dbFmt(a.driveby_db ?? "–")} dB</small></span>
+    ${tipps.length ? `<div class="panel"><h3>Tipps</h3><ul>${tipps.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}
+    ${alts.length ? `<div class="panel"><h3>Weniger Risiko</h3><ul class="alts">${alts.map(({ eintrag: a, ergebnis: ar }) => `
+      <li><button class="alt" data-alt="${esc(a.id)}"><span>${esc(a.strecke)} · ${esc(a.veranstalter)}<small>${esc(a.tagesart)} · ${a.stand_db ?? "–"} / ${dbFmt(a.driveby_db ?? "–")} dB</small></span>
         <span class="alt-lamps" aria-label="Standtest ${STUFEN[ar.stand.stufe].label}, Drive-by ${STUFEN[ar.driveby.stufe].label}"><span class="dot ${ar.stand.stufe}"></span><span class="dot ${ar.driveby.stufe}"></span></span></button></li>`).join("")}</ul>
-      <p class="note">Aus unserer Tabelle. Freie Termine findest du beim Veranstalter.</p></div>` : ""}
-    <p class="note">Rot heißt hohes Risiko, nicht sicher durchgefallen. Grün gibt es nur mit eigenem Messwert.</p>`;
+      </div>` : ""}`;
   zeigePeek(r);
 }
 
@@ -237,11 +230,11 @@ function verbinde() {
 
 async function start() {
   try {
-    const res = await fetch("data/strecken.json");
+    const res = await fetch("data/strecken.json?v=5");
     if (!res.ok) throw new Error(res.status);
     daten = await res.json();
   } catch (err) {
-    $("ergebnis").innerHTML = `<p class="empty">Die Streckendaten konnten nicht geladen werden. Bitte Seite neu laden.</p>`;
+    $("ergebnis").innerHTML = `<p class="empty">Daten nicht geladen – Seite neu laden.</p>`;
     return;
   }
   leseUrl();

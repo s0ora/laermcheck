@@ -8,3 +8,5 @@ Lärm-Risiko-Check für Trackdays (Hochschulprojekt, Vorabversion): Limit mit Qu
 - `npm test`: Testszenarien A–F
 
 Live: https://s0ora.github.io/laermcheck/
+
+Bei Änderungen an CSS, JS oder Daten die Versionsnummer `?v=` in `index.html` und `app.js` hochzählen (Browser-Cache).

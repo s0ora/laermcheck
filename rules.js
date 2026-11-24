@@ -3,11 +3,11 @@
 
 export const KATEGORIEN = [
   { id: "serie", name: "Serie", info: "Original-Auspuff ohne Klappe", klappe: false },
-  { id: "serie_klappe", name: "Serie mit Klappe", info: "Werks-Sportauspuff, schaltbar (z. B. Porsche PSE)", klappe: true },
-  { id: "sport_klappe", name: "Sport-Nachrüstung mit Klappe", info: "Zubehör-Anlage mit Klappe", klappe: true },
-  { id: "sport", name: "Sport-Nachrüstung ohne Klappe", info: "Zubehör-Anlage, immer offen", klappe: false },
+  { id: "serie_klappe", name: "Serie mit Klappe", info: "Werks-Sportauspuff, schaltbar (z. B. PSE)", klappe: true },
+  { id: "sport_klappe", name: "Sport-Nachrüstung mit Klappe", info: "Zubehör, mit Klappe", klappe: true },
+  { id: "sport", name: "Sport-Nachrüstung ohne Klappe", info: "Zubehör, ohne Klappe", klappe: false },
   { id: "motorsport", name: "Motorsport", info: "Ohne Straßenzulassung", klappe: false },
-  { id: "straight", name: "Straight Pipe / Decat", info: "Ohne Endtopf oder Katalysator", klappe: false },
+  { id: "straight", name: "Straight Pipe / Decat", info: "Ohne Endtopf oder Kat", klappe: false },
 ];
 
 export const STRENG_AB = { stand: 101, driveby: 98 }; // Limit <= Wert gilt als streng
@@ -27,7 +27,7 @@ const MATRIX = {
 
 export const STUFEN = {
   gruen: { label: "Geringes Risiko", rang: 0 },
-  gelb: { label: "Risiko – vorbereiten", rang: 1 },
+  gelb: { label: "Mittleres Risiko", rang: 1 },
   rot: { label: "Hohes Risiko", rang: 2 },
   unbekannt: { label: "Unbekannt", rang: null },
   keiner: { label: "Kein Test", rang: null },
@@ -47,9 +47,9 @@ export function istStreng(art, limit) {
 export function pruefeMesswert(roh) {
   if (roh === "" || roh == null) return null;
   const n = Number(String(roh).replace(",", "."));
-  if (!Number.isFinite(n)) return "Bitte eine Zahl eingeben, z. B. 99.";
+  if (!Number.isFinite(n)) return "Bitte eine Zahl eingeben.";
   if (n < MESSWERT_MIN || n > MESSWERT_MAX)
-    return `Ein Standwert liegt normalerweise zwischen ${MESSWERT_MIN} und ${MESSWERT_MAX} dB.`;
+    return `Üblich sind ${MESSWERT_MIN}–${MESSWERT_MAX} dB.`;
   return null;
 }
 
@@ -57,37 +57,37 @@ function warumOhneWert(kat, art, streng) {
   switch (kat) {
     case "serie":
       return art === "stand"
-        ? "Serienautos bestehen meist, aber nicht immer (Beispiel: 991 S mit 110 dB bei Limit 105). Trag einen Messwert ein."
-        : "Serienautos bestehen meist, aber nicht immer – ohne Messung bleibt ein Risiko.";
+        ? "Serie ist meist unkritisch, aber nicht immer (991 S: 110 dB bei Limit 105)."
+        : "Serie ist meist unkritisch, aber nicht immer.";
     case "serie_klappe":
-      return "Mit geschlossener Klappe bestehen Autos dieser Art meist. Ohne Messwert bleibt ein Risiko.";
+      return "Mit geschlossener Klappe meist unkritisch.";
     case "sport_klappe":
     case "sport":
       return streng
-        ? "Dieser Tag hat ein strenges Limit. Mit Sportauspuff fallen hier Autos öfter durch."
-        : "Ein Sportauspuff liegt oft nah am Limit. Ohne Messwert ist das nicht sicher einzuschätzen.";
+        ? "Strenges Limit – Sportauspuffe fallen hier öfter durch."
+        : "Sportauspuffe liegen oft nah am Limit.";
     default:
-      return "Ohne Schalldämpfung liegen Werte meist deutlich über Trackday-Limits.";
+      return "Ohne Dämpfung meist deutlich über dem Limit.";
   }
 }
 
 function bewerteMessart(art, eintrag, eingabe) {
   if (!eintrag) {
-    return { stufe: "unbekannt", warum: "Für diesen Termin haben wir keine Daten – frag beim Veranstalter nach.", tipps: [] };
+    return { stufe: "unbekannt", warum: "Keine Daten – beim Veranstalter erfragen.", tipps: [] };
   }
   const limit = art === "stand" ? eintrag.stand_db : eintrag.driveby_db;
   if (limit == null) {
     return {
       stufe: "keiner",
       limit: null,
-      warum: art === "stand" ? "Kein Standtest an diesem Tag – gemessen wird nur beim Vorbeifahren." : "Kein Drive-by-Limit an diesem Tag.",
+      warum: art === "stand" ? "Kein Standtest an diesem Tag." : "Kein Drive-by an diesem Tag.",
       tipps: [],
     };
   }
   const kat = kategorie(eingabe.kategorie);
   const streng = istStreng(art, limit);
   const tipps = [];
-  if (kat?.klappe) tipps.push("Klappe beim Test und auf der Strecke geschlossen lassen.");
+  if (kat?.klappe) tipps.push("Klappe zu – beim Test und auf der Strecke.");
 
   // Regel 1: eigener Standwert
   if (art === "stand" && eingabe.standwert != null) {
@@ -95,15 +95,15 @@ function bewerteMessart(art, eintrag, eingabe) {
     let stufe, warum;
     if (diff >= ABSTAND_GRUEN) {
       stufe = "gruen";
-      warum = `Dein Standwert liegt ${fmt(diff)} dB unter dem Limit – mehr als die berichtete Schwankung von ${ABSTAND_GRUEN} dB.`;
+      warum = `${fmt(diff)} dB unter dem Limit – mehr als die übliche Schwankung (${ABSTAND_GRUEN} dB).`;
     } else if (diff >= 0) {
       stufe = "gelb";
       warum = diff === 0
-        ? `Dein Standwert liegt genau am Limit. Werte schwanken um bis zu ${ABSTAND_GRUEN} dB.`
-        : `Dein Standwert liegt nur ${fmt(diff)} dB unter dem Limit. Werte schwanken um bis zu ${ABSTAND_GRUEN} dB.`;
+        ? `Genau am Limit – Werte schwanken bis ${ABSTAND_GRUEN} dB.`
+        : `Nur ${fmt(diff)} dB unter dem Limit – Werte schwanken bis ${ABSTAND_GRUEN} dB.`;
     } else {
       stufe = "rot";
-      warum = `Dein Standwert liegt ${fmt(-diff)} dB über dem Limit.`;
+      warum = `${fmt(-diff)} dB über dem Limit.`;
     }
     return { stufe, limit, streng, warum, zusatz: null, tipps, mitMesswert: true };
   }
@@ -114,10 +114,10 @@ function bewerteMessart(art, eintrag, eingabe) {
   // Regel 3: offene Ansaugung eine Stufe schlechter
   if (eingabe.ansaugung === "offen") {
     if (stufe === "gelb") stufe = "rot";
-    zusatz = "Eine offene Ansaugung macht das Auto zusätzlich lauter (Annahme).";
+    zusatz = "Offene Ansaugung: lauter (Annahme).";
   }
   if (art === "driveby" && stufe !== "gruen" && !["motorsport", "straight"].includes(eingabe.kategorie)) {
-    tipps.push("Vor den Messpunkten früh hochschalten und nicht voll beschleunigen – so berichten es Fahrer.");
+    tipps.push("An den Messpunkten früh hochschalten (Fahrerberichte).");
   }
   return { stufe, limit, streng, warum: warumOhneWert(eingabe.kategorie, art, streng), zusatz, tipps, mitMesswert: false };
 }

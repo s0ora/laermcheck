@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lärmcheck – Besteht dein Auto den Lärmtest?</title>
-<meta name="description" content="Lärm-Risiko-Check für Trackdays: Limit mit Quelle und Risiko-Ampel für Standtest und Drive-by.">
+<title>Lärmcheck</title>
+<meta name="description" content="Lärmtest-Risiko für Trackdays in UK: Limit, Quelle, Ampel.">
 <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f2ece0" media="(prefers-color-scheme: light)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,200..900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<script type="module" src="app.js"></script>
+<link rel="stylesheet" href="styles.css?v=5">
+<script type="module" src="app.js?v=5"></script>
 </head>
 <body>
 <div class="flag" aria-hidden="true"></div>
 
 <header class="top">
-  <p class="eyebrow"><span>Trackday · UK</span><span>Vorabversion</span></p>
+  <p class="eyebrow"><span>Trackday · UK</span><span>Beta</span></p>
   <h1>Lärm<span class="hy" aria-hidden="true">‐</span><span class="l2">check</span></h1>
-  <p class="lead">Vor der Buchung wissen, wie riskant der Lärmtest wird – mit Limit, Quelle und Ampel für <strong>Standtest</strong> und <strong>Drive-by</strong>.</p>
-  <p class="disclaimer">Einschätzung, keine Garantie. Werte stammen von den Veranstaltern und werden noch geprüft.</p>
+  <p class="lead">Lärmtest-Risiko vor der Buchung.</p>
+  <p class="disclaimer">Einschätzung, keine Garantie.</p>
 </header>
 
 <main>
@@ -28,7 +28,7 @@
   <section class="step" id="step-termin" data-state="active" aria-labelledby="h-termin">
     <div class="step-head">
       <span class="step-no" aria-hidden="true">01</span>
-      <h2 id="h-termin">Dein Termin</h2>
+      <h2 id="h-termin">Termin</h2>
       <span class="step-check" aria-hidden="true"></span>
     </div>
 
@@ -44,7 +44,7 @@
       <label class="field" id="f-tagesart" hidden>
         <span class="field-label">Tagesart</span>
         <select id="sel-tagesart"></select>
-        <span class="field-help">Welche Tagesart dein Termin hat, steht auf der Buchungsseite.</span>
+        <span class="field-help">Steht in der Buchung.</span>
       </label>
     </div>
 
@@ -55,7 +55,7 @@
   <section class="step" id="step-auto" data-state="waiting" aria-labelledby="h-auto">
     <div class="step-head">
       <span class="step-no" aria-hidden="true">02</span>
-      <h2 id="h-auto">Dein Auto</h2>
+      <h2 id="h-auto">Auto</h2>
       <span class="step-check" aria-hidden="true"></span>
     </div>
 
@@ -68,17 +68,17 @@
       <legend class="field-label">Ansaugung</legend>
       <div class="segmented" role="radiogroup">
         <label><input type="radio" name="ansaugung" value="serie" checked><span>Serie</span></label>
-        <label><input type="radio" name="ansaugung" value="offen"><span>Offen / Sportfilter</span></label>
+        <label><input type="radio" name="ansaugung" value="offen"><span>Offen</span></label>
       </div>
     </fieldset>
 
     <label class="field">
-      <span class="field-label">Dein Standwert <em>optional</em></span>
+      <span class="field-label">Standwert <em>optional</em></span>
       <span class="input-unit">
         <input id="in-wert" type="text" inputmode="decimal" autocomplete="off" placeholder="z. B. 99" aria-describedby="wert-help wert-err">
         <span>dB</span>
       </span>
-      <span class="field-help" id="wert-help">Gemessen 0,5 m hinter dem Auspuff bei ¾ der Maximaldrehzahl, z. B. bei einem früheren Trackday. Nur mit Messwert ist Grün möglich.</span>
+      <span class="field-help" id="wert-help">0,5 m hinterm Auspuff, ¾ Drehzahl.</span>
       <span class="field-error" id="wert-err" role="alert"></span>
     </label>
   </section>
@@ -87,23 +87,23 @@
   <section class="step" id="step-ergebnis" data-state="waiting" aria-labelledby="h-ergebnis">
     <div class="step-head">
       <span class="step-no" aria-hidden="true">03</span>
-      <h2 id="h-ergebnis">Einschätzung</h2>
+      <h2 id="h-ergebnis">Ergebnis</h2>
     </div>
     <div id="ergebnis" aria-live="polite">
-      <p class="empty">Wähle oben deinen Termin und deinen Auspuff – dann erscheint hier die Ampel für Standtest und Drive-by.</p>
+      <p class="empty">Termin und Auspuff wählen.</p>
     </div>
   </section>
 </main>
 
 <a class="peek" id="peek" href="#step-ergebnis" hidden>
   <span class="peek-lamps" id="peek-lamps"></span>
-  <span>Einschätzung ansehen</span>
+  <span>Ergebnis</span>
   <span aria-hidden="true">↓</span>
 </a>
 
 <footer class="foot">
-  <p><strong>So funktioniert die Ampel:</strong> feste Regeln, keine KI. Ohne eigenen Messwert gibt es nie Grün. Rot heißt hohes Risiko – nicht sicher durchgefallen.</p>
-  <p>Daten: öffentliche Angaben der Veranstalter, jeweils mit Quelle. Hochschulprojekt an der Hochschule der Medien Stuttgart. Keine Cookies, kein Tracking.</p>
+  <p>Feste Regeln, keine KI. Grün nur mit eigenem Messwert. Rot = hohes Risiko, nicht sicher durchgefallen.</p>
+  <p>Daten der Veranstalter, mit Quelle. HdM Stuttgart · kein Tracking.</p>
 </footer>
 <div class="flag" aria-hidden="true"></div>
 </body>
